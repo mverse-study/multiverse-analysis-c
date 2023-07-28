@@ -94,9 +94,9 @@ In the code chunk below, visualize the estimated coefficients and the associated
 2. the models, or the universes, are ordered by the magnitude of the estimated
 coefficient within each group.
 
-```{r exploremv}
+```{r exploremv, fig.asp=2, fig.width=20}
 # explore the multiverse
-
+# to zoom in to a plot, click "Show in New Window" button on the top of the plot
 ```
 
 > Knit the current document by clicking `knit` button at the top ro pressing
