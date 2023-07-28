@@ -1,0 +1,110 @@
+---
+title: "Multiverse analysis study - Analysis"
+output:
+  html_document:
+    df_print: paged
+---
+
+> Conduct the multiverse analysis described below by completing the provided
+code chunks. Do NOT edit or remove the provided code chunk headers in the
+main body of the document. e.g., ```{r chunk1}.
+
+
+## Introduction
+
+Recall the research question from the tutorial activity.
+
+> Did mortgage providers approve an application differently based on the 
+applicant's sex in Boston in 1990?
+
+To answer the question, you are asked to conduct a multiverse analysis testing
+the following set of hypotheses at 5% significance level, or 95% confidence 
+level.
+
+> - $H_0$: No, they were as likely to approve female applicants as male 
+applicants.
+> - $H_1$: Yes, they were either more likely or less likely to approve female
+applicants than male applicants.
+
+## Data
+
+We will use the same dataset `hdma`.
+
+```{r readdata}
+# the dataset is stored in the file named hdma.csv
+hdma <- read.csv("hdma.csv")
+hdma 
+```
+
+Each row of the dataset represents a mortgage application with the following
+information in the columns:
+
++  `is_approved` is 1 if the application was approved and 0 otherwise.
++  `is_female` is 1 if the applicant was a female and 0 otherwise.
++  `is_black` is 1 if the applicant was a black or Hispanic and 0 if the 
+applicant was non-Hispanic white. The dataset does not contain other races.
++  `is_married` is 1 if the applicant was married and 0 otherwise.
++  `is_housing_expense_ratio_high` is 1 if the bank's calculation of housing
+expense over income exceeds 30% and 0 otherwise.
++  `is_self_employed` is 1 if the applicant was self-employed and 0 otherwise.
++  `is_bad_credit` is 1 if the applicant had one or more public records such as
+bankruptcy, charge offs, and collection actions and 0 otherwise.
++  `payment_income_ratio` is the bank's calculation of total debt payment over
+income in percentages.
++  `loan_to_value_ratio` is the value of the loan amount over the appraisal
+value of the property in percentages.
+
+## Defining the multiverse
+
+Assume that any combination of the extra variables, or covariates, included in 
+the dataset makes a defensible model for answering the research question. In
+the code chunk below, define the multiverse that consists of ALL defensible 
+models for answering the research question using the dataset `hdma`. All models
+must:
+
+1. be a linear regression model,
+2. set `is_approved` as the response variable, and
+3. set `is_female` as an explanatory variable.
+
+```{r definemv}
+# define the multiverse
+
+```
+
+## Fitting the multiverse
+
+In the code chunk below, fit and store the following quantities from each model
+in the multiverse:
+
+1. the coefficient estimate of `is_female`, and
+2. the upper and lower bound of the estimates' 95% confidence intervals.
+
+```{r fitmv}
+# fit the multiverse
+
+```
+
+## Exploring the multiverse
+
+In the code chunk below, visualize the estimated coefficients and the associated
+95% confidence intervals. Organize the plot such that:
+
+1. the models, or the universes, are grouped by whether they include both 
+`is_black` and `is_married`, and
+2. the models, or the universes, are ordered by the magnitude of the estimated
+coefficient within each group.
+
+```{r exploremv}
+# explore the multiverse
+
+```
+
+> Knit the current document by clicking `knit` button at the top ro pressing
+`Shift + Ctrl + K`. Proceed back to the Quercus quiz. Keep the current doucment
+open as you complete the Quiz. You may use the following code chunk or add new 
+code chunks to help answer the Quiz items.
+
+```{r}
+# use this area for the Quiz
+
+```

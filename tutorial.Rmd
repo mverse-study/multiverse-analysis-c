@@ -1,0 +1,399 @@
+---
+title: "Multiverse analysis study - Tutorial"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Introduction
+
+Data analyses for any scientific research in an iterative, multi-stage process.
+The statistical results that are reported in a published paper are usually one
+of many reasonable analyses arising from the iterative process. A multiverse
+analysis aims to increase transparency by performing multiple analyses on a
+given dataset based on a set of defensible analysis procedures. In this 
+tutorial, we will look at a simple example and you will complete extend the
+example in the following activity.
+
+## Learning objectives
+
+In this tutorial, you will practice defining and exploring a set of multiple
+analyses for a given dataset in R. You will:
+
++ define multiple models using purpose-built package, `mverse`,
++ fit the models using `lm_mverse()`,
++ extract and save quantities of interest from the fitted models, and
++ organize and visualize the extracted quantities to help answer a research 
+  question.
+
+## Data
+
+We are given a dataset that contains information on mortgage applications made 
+in 1990 in Boston. We can read the dataset and store it in `hdma` as shown 
+below. You can run the code below by clicking the green arrow button on the
+right of the code chunk or pressing 'Ctrl + Shift + Enter' with your cursor 
+inside the code chunk to view the dataset.
+
+```{r}
+# the dataset is stored in the file named hdma.csv
+hdma <- read.csv("hdma.csv")
+hdma 
+```
+
+Each row of the dataset represents a mortgage application with the following
+information in the columns:
+
++  `is_approved` is 1 if the application was approved and 0 otherwise.
++  `is_female` is 1 if the applicant was a female and 0 otherwise.
++  `is_black` is 1 if the applicant was a black or Hispanic and 0 if the 
+applicant was non-Hispanic white. The dataset does not contain other races.
++  `is_married` is 1 if the applicant was married and 0 otherwise.
++  `is_housing_expense_ratio_high` is 1 if the bank's calculation of housing
+expense over income exceeds 30% and 0 otherwise.
++  `is_self_employed` is 1 if the applicant was self-employed and 0 otherwise.
++  `is_bad_credit` is 1 if the applicant had one or more public records such as
+bankruptcy, charge offs, and collection actions and 0 otherwise.
++  `payment_income_ratio` is the bank's calculation of total debt payment over
+income in percentages.
++  `loan_to_value_ratio` is the value of the loan amount over the appraisal
+value of the property in percentages.
+
+## Research question
+
+We are interested in answering the following research question.
+
+> Did mortgage providers approve an application differently based on the 
+applicant's sex in Boston in 1990?
+
+To answer the question, we can conduct a hypothesis test with the following
+set of hypotheses.
+
+> - $H_0$: No, they were as likely to approve female applicants as male 
+applicants.
+> - $H_1$: Yes, they were either more likely or less likely to approve female
+applicants than male applicants.
+
+We will conduct the test at 5% significance level, or 95% confidence level.
+
+_Recall that a hypothesis test investigates whether a given data set provides
+evidence against the null hypothesis, $H_0$, which leads to the that the 
+alternative hypothesis, $H_1$ is true._
+
+
+## A simple linear regression model
+
+One way to conduct the hypothesis test for the given research question is the 
+t-test for a single regression coefficient in a linear regression model. For
+example, we can fit the following simple linear regression model.
+
+$$IsApproved_i = \beta_0 + \beta_1 IsFemale_i + \varepsilon_i$$
+
+where $IsApproved_i$ is `is_approved` and $IsFemale_i$ is `is_female` for $i$th
+application in the dataset `hdma`. 
+
+In R, we can write the formula as 
+`is_approved ~ is_female`. To fit the linear regression model, we can pass the 
+formula and along with the dataset to the function `lm()` as below. Calling the
+`summary()` function on the fitted object provides a quick summary of the model.
+
+__Run__ the code below. This provides a summary of the fitted simple linear 
+regression model.
+
+```{r}
+fit <- lm(formula = is_approved ~ is_female, data = hdma)
+summary(fit)
+```
+
+The summary table provides the estimated coefficient of the term $IsFemale$, 
+which is 0.004919. Recall that in the given dataset, a unit increase in 
+$IsFemale$ indicates the applicant's sex being female, 1, vs. male, 0. Thus,
+the coefficient is the mean gain in $IsApproved$ for female applicants vs.
+male applicants. $IsApproved$ was also encoded using 0 and 1 with 1 indicating
+an approved application. One way to interpret the result is that female 
+applicants were approved for their mortgage applications with 0.4919% higher
+probability on average. However, this value does not indicate whether the
+difference is statistically significant.
+
+The table provides the two-sided p-value for $IsFemale$, 0.762. When this 
+value is smaller than the predefined significance level, we could conclude that 
+the coefficient for $IsFemale$ does not equal to 0 at the significance level.
+In this case, since it is larger than our significance level, 0.05, we conclude
+that the result is not statistically significant and do not reject the null
+hypothesis.
+
+> Using the the simple linear regression model, we do not find statistically
+significant evidence that an applicant's sex was relevant in the probability
+of approval for their mortgage application. We fail to reject the null 
+hypothesis that mortgage providers were as likely to approve female applicants
+as male applicants.
+
+Alternatively, we can extract the 95% confidence interval for the coefficient
+estimate using `confint()`. The function by default outputs a table with 95% 
+confidence intervals for all coefficients and the intercept. We can extract 
+confidence interval for the $IsFemale$ term only by using the row name. 
+
+__Run__ the code below. The code displays both the table of confidence intervals 
+for all terms and the confidence interval extracted for the $IsFemale$ term.
+
+```{r}
+ci <- confint(fit)
+ci # all confidence intervals
+ci[row.names(ci) == "is_female", ] # extracting the is_female coefficient ci
+```
+
+_Recall that in R, you can select a subset of the rows in a table by passing
+the desired condition in the first index while leaving the second index empty,
+`<table>[<condition> , ]`._
+
+We can make the same conclusion that we can not reject the null hypothesis based
+on the fact that the confidence interval, (-0.027, 0.037), includes 0.
+
+### _Practice_
+
+Mortgage providers consider the applicant's financial information when assessing
+an application. One may argue that the analysis above doesn't consider this and
+that the following model is a better model to answer the research question.
+
+$$IsApproved_i = \beta_0 + \beta_1 IsFemale_i + \beta_2 PaymentIncomeRatio_i + \varepsilon_i$$
+
+where $IsApproved_i$ is `is_approved`, $IsFemale_i$ is `is_female`, and 
+$PaymentIncomeRatio_i$ is `payment_income_ratio` for $i$th application in the 
+dataset `hdma`. 
+
+In the code chunk provided below, fit the multiple linear regression defined
+above and extract the 95% confidence interval for the $IsFemale$ term.
+
+```{r}
+# write your code here
+
+```
+
+## Multiverse analysis 
+
+The dataset includes more than the payment to income ratio for each application.
+It includes other information about the applicant's financial information as
+well as other demographic information. The mortgage providers also had access
+to them when making their decisions. However, it's difficult to say that all of
+the information were relevant when making the decisions on the approvals. 
+
+Assume that any combination of the extra variables, or covariates, included in 
+the dataset makes a defensible model for answering the research question. A 
+multiverse analysis analyzes and reports results from all of the defensible 
+models. For this tutorial, we will only consider `payment_income_ratio` and 
+`is_married` as covariates.
+
+### Defining the multiverse
+
+With the 2 covariates, we can construct 4 defensible models in the following 
+ways:
+
+1. Do not include either `payment_income_ratio` or `is_married`
+2. Include only `payment_income_ratio`
+3. Include only `is_married`
+4. Include both `payment_income_ratio` and `is_married`
+
+> We will use the package `mverse`. The package is designed specifically to help
+define and explore multiverse analysis easily. 
+
+__Run__ each of the code chunks below to define the multiverse with the package.
+
+1. Install and load the package.
+
+```{r}
+# The installation process may ask you to update other packages. 
+# Select the option to update All.
+remotes::install_github("mverseanalysis/mverse")
+library(mverse)
+```
+
+2. Define the decision branch. In `mverse`, each decision point is called a 
+branch. `formula_branch()` defines options around the model formula. 
+
+You can specify the 4 models manually by typing the formulae in the function:
+
+```{r}
+formulae <- formula_branch(
+  is_approved ~ is_female, 
+  is_approved ~ is_female + payment_income_ratio,
+  is_approved ~ is_female + is_married,
+  is_approved ~ is_female + payment_income_ration + is_married
+  )
+formulae
+```
+Or, you can pass the two covariates to the optional argument `covariate = ` to
+specify that they are optional in forming the model formula and all combinations
+need to be used.
+
+```{r}
+formulae <- formula_branch(
+  is_approved ~ is_female, 
+  covariates = c("payment_income_ratio", "is_married")
+  )
+formulae
+```
+3. Define a multiverse based on the branch. In `mverse`, any multiverse analysis
+is defined by a source dataset and a set of branches. We can make use of R's
+pipe operator, `|>`, to create a multiverse analysis object with the source
+dataset and consecutively add the formula branch defined above.
+
+```{r}
+mv <- create_multiverse(hdma) |>
+  add_formula_branch(formulae)
+# the
+mv
+```
+
+
+_Note that all 4 models include `is_approved` as the response variable and 
+`is_female` as an explanatory variable since we are interested in the 
+relationship between the two._
+
+
+### Fitting the multiverse
+
+`mverse` provides a set of functions that makes it easy to fit `lm()` across
+the multiverse and extract the summary values.
+
+For each of the model in the multiverse, we will
+
+1. fit the linear regression model using the dataset `hdma`,  
+2. extract the coefficient estimate and 95% confidence interval for `is_female`, 
+and
+3. store the extracted estimate and confidence interval.
+
+__Run__ each of the code chunks below to define the multiverse with the package.
+
+1. Fit the linear regression models using `lm_mverse()`. With a single call, you
+can fit all models defined in the multiverse.
+
+```{r}
+mv <- lm_mverse(mv)
+```
+
+2. Extract and store summary values associated with `is_female`. 
+`spec_summary()` allows you to extract the regression coefficient, p-values, 
+95% confidence intervals, and other statistics associated with the term from
+each regression model.
+
+```{r}
+results <- spec_summary(mv, "is_female")
+results
+```
+
+
+### Exploring the multiverse
+
+In this tutorial example, we only considered decisions around inclusion and 
+exclusion of 2 out of 7 covariates. As you will see in the following activity,
+a multiverse analysis can be complex and large. It is therefore important to
+organize and represent the results in a human-readable format to help answering 
+the research question.
+
+First, we will present the result in a table. The output of `spec_summary()` is 
+compatible with `tidyverse`. We can manipulate using functions from `dplyr` 
+package.
+
+__Run__ the following code. We can use square bracket extractor to select the 
+columns we want to display in order. `formulae_branch` and `formulae_branch_code` 
+contain the short form named of the formula branch options and the code used to 
+define them. The column names are dereived from `formulae` variable name. 
+`estimate`, `conft.low`, and `conf.high` are the coefficient estimate, lower 
+bound of the confidence interval, and upper bound of the confidence interval 
+respectively.
+
+```{r}
+results[ , c("formulae_branch", "formulae_branch_code", 
+             "estimate", "conf.low", "conf.high")]
+```
+
+We now have a table that presents the results from the multiverse analysis in a
+human-readable manner. From the table, we can see that all 4 analyses resulted
+in 95% confidence intervals that contain 0. We can also see from the table that
+including `is_married` as the covariate alone resulted in the largest
+coefficient estimate.
+
+Visualizing the table can help explore and deduce conclusions from the 
+multiverse analysis. `mverse` includes functions that allow exploration of the
+multiverse visually.
+
+__Run__ the following code. `spec_curve()` from `mverse` plots the  coefficient 
+estimates and the confidence intervals using outputs from `spec_summary()`. By
+default, the function also uses colours to distinguish statistically significant
+results.
+
+```{r}
+spec_curve(results)
+```
+
+
+From the plot above, we can tell that while all 4 models resulted in positive
+coefficient estimates, the 95% confidence intervals all contain 0. The function
+also plots the analyses sorted by the size of the coefficient estimates. The 
+visual table at the bottom indicates to which model option each result belongs. 
+By default the short form names are displayed. We can also display the specified 
+model explicitly.
+
+__Run__ the code below. `label = "code"` option in `spec_curve()` displays the 
+code used to define the branch options instead of the short form names.
+
+```{r}
+spec_curve(results, label = "code")
+```
+
+Looking at the plot, it's clear that including `is_married` in the regression 
+model resulted in higher coefficient estimates for `is_female`. To highlight the
+comparison between models with and without `is_married`, we can visually group
+the values by whether the model includes `is_married`.
+
+__Run__ the code below. `grepl(x, y)` returns a vector consisting of `TRUE` if 
+the character `x` is detected in each value of vector `y` and `FALSE` otherwise.
+We can check the `formulae_branch_code` to identify which models include 
+`is_married` and add a new column to save the information. Using the new column 
+in `spec_curve()`'s `colour_by` option, we can change the colour scheme to 
+distinguish results from models that include `is_married`.
+
+```{r}
+results["has_is_married"] <- grepl("is_married", results$formulae_branch_code)
+spec_curve(results, colour_by = "has_is_married")
+```
+
+Suppose you want to highlight the model that includes both `is_married` and
+`payment_income_ratio`. You can use `&` to combine more than one logical checks
+to check that all of them are true. `order_by = "has_both"` in `spec_curve()` 
+sorts the values so that the model with both covariates are appear on the right.
+
+```{r}
+results["has_both"] <- grepl("is_married", results$formulae_branch_code) &
+  grepl("payment_income_ratio", results$formulae_branch_code)
+spec_curve(results, colour_by = "has_both", order_by = "has_both")
+```
+
+Alternatively, you can make use of `ggplot2` library's functions because 
+`spec_curve()`'s output is a `ggplot` object. For example, you can use 
+`facet_grid()` to isolate those with both covariates in different a different
+row as shown below. This method allows you to keep the colour scheme for 
+statistical significance.
+
+```{r}
+library(ggplot2)
+spec_curve(results) +
+  facet_grid(rows = vars(has_both))
+```
+
+_Note: Using column facets with `spec_curve()` is not recommended as repeating 
+the table at the bottom causes overlaps._
+
+> In all 4 models fitted in the multiverse analysis, we do not find 
+statistically significant evidence that an applicant's sex was relevant in the 
+probability of approval for their mortgage application. The multiverse analysis
+further strengthened our conclusion from the simple linear regression analysis
+with no covariates. However, it's worth noting that including the information
+about an applicant's marital status visibly increased the estimated effect
+size. 
+
+Indeed, you will see that the larger multiverse analysis in the following 
+activity consists of results that are both statistically significant and not.
+
+> Knit the current document by clicking `knit` button at the top ro pressing
+`Shift + Ctrl + K`. Proceed back to the Quercus quiz. For the following 
+activity, keep the rendered `tutorial.html` document open for reference.
