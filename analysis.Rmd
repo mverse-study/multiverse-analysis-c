@@ -5,6 +5,23 @@ output:
     df_print: paged
 ---
 
+```{r setup}
+if (!require(mverse)) {
+  # Installs mverse if it is missing
+  # The installation process may ask you to update other packages. 
+  # If asked, select the option to update All.
+  remotes::install_github("mverseanalysis/mverse")
+  library(mverse)
+}
+if (!require(ggplot2)) {
+  # Installs ggplot2 if it is missing
+  # The installation process may ask you to update other packages. 
+  # If asked, select the option to update All.
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+```
+
 > Conduct the multiverse analysis described below by completing the provided
 code chunks. Do NOT edit or remove the provided code chunk headers in the
 main body of the document. e.g., ```{r chunk1}.
@@ -62,7 +79,7 @@ the code chunk below, define the multiverse that consists of ALL defensible
 models for answering the research question using the dataset `hdma`. All models
 must:
 
-1. be a linear regression model,
+1. be a logistic regression model,
 2. set `is_approved` as the response variable, and
 3. set `is_female` as an explanatory variable.
 
